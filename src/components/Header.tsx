@@ -13,6 +13,7 @@ import {
   Info,
 } from 'lucide-react';
 import { Fragment, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const megaMenuSections = [
   {
@@ -126,38 +127,38 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           <div className="flex-shrink-0">
-            <a href="/" className="text-2xl font-bold text-brand-green">
+            <Link to="/" className="text-2xl font-bold text-brand-green">
               Electric Stadium
-            </a>
+            </Link>
           </div>
 
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-brand-light hover:text-brand-green transition-colors">
+            <Link to="/" className="text-brand-light hover:text-brand-green transition-colors">
               Home Page
-            </a>
-            <a href="/events" className="text-brand-light hover:text-brand-green transition-colors">
+            </Link>
+            <Link to="/events" className="text-brand-light hover:text-brand-green transition-colors">
               Events List
-            </a>
-            <a href="/contact" className="text-brand-light hover:text-brand-green transition-colors">
+            </Link>
+            <Link to="/contact" className="text-brand-light hover:text-brand-green transition-colors">
               Contact Us
-            </a>
+            </Link>
 
             <MoreInfoPopover />
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
-            <a
-              href="/join"
+            <Link
+              to="/join"
               className="px-4 py-2 text-sm font-medium text-white bg-transparent border border-brand-light rounded-md hover:bg-brand-light hover:text-brand-dark transition-colors"
             >
               Join
-            </a>
-            <a
-              href="/login"
+            </Link>
+            <Link
+              to="/login"
               className="px-4 py-2 text-sm font-medium text-brand-dark bg-brand-green border border-brand-green rounded-md hover:opacity-90 transition-opacity"
             >
               Login
-            </a>
+            </Link>
           </div>
         </div>
       </div>
