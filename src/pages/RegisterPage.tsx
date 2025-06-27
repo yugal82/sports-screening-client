@@ -31,22 +31,22 @@ export function RegisterPage() {
   return (
     <div className="bg-[#121212]">
       <Header />
-      <main className="text-white flex items-center justify-center py-16">
+      <main className="text-white flex items-center justify-center py-8">
         <div className="container mx-auto flex rounded-lg overflow-hidden max-w-5xl">
           {/* Image Section */}
-          <div className="hidden md:block md:w-1/2">
+          <div className="hidden md:block md:w-1/2 max-h-[32rem]">
             <img src={RegisterImage} alt="F1 Driver" className="object-cover h-full w-full" />
           </div>
           {/* Form Section */}
           <div className="w-full md:w-1/2 bg-brand-dark-gray p-12 flex flex-col justify-center">
-            <h2 className="text-4xl font-bold mb-8 text-center">Register</h2>
+            <h2 className="text-4xl font-bold mb-8">Register</h2>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <input
                   type="text"
                   placeholder="Name"
                   {...register('name', { required: 'Name is required' })}
-                  className="w-full bg-transparent border-b-2 border-brand-light-gray focus:border-brand-green outline-none p-1 transition-colors"
+                  className="w-full bg-transparent border-b-2 border-[#535353] focus:border-brand-green outline-none p-1 transition-colors"
                 />
                 {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message as string}</p>}
               </div>
@@ -61,7 +61,7 @@ export function RegisterPage() {
                       message: 'Invalid email address',
                     },
                   })}
-                  className="w-full bg-transparent border-b-2 border-brand-light-gray focus:border-brand-green outline-none p-1 transition-colors"
+                  className="w-full bg-transparent border-b-2 border-[#535353] focus:border-brand-green outline-none p-1 transition-colors"
                 />
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message as string}</p>}
               </div>
@@ -76,7 +76,7 @@ export function RegisterPage() {
                       message: 'Password must be at least 8 characters',
                     },
                   })}
-                  className="w-full bg-transparent border-b-2 border-brand-light-gray focus:border-brand-green outline-none p-1 transition-colors"
+                  className="w-full bg-transparent border-b-2 border-[#535353] focus:border-brand-green outline-none p-1 transition-colors"
                 />
                 {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message as string}</p>}
               </div>
@@ -88,7 +88,7 @@ export function RegisterPage() {
                     required: 'Please confirm your password',
                     validate: (value) => value === password || 'Passwords do not match',
                   })}
-                  className="w-full bg-transparent border-b-2 border-brand-light-gray focus:border-brand-green outline-none p-1 transition-colors"
+                  className="w-full bg-transparent border-b-2 border-[#535353] focus:border-brand-green outline-none p-1 transition-colors"
                 />
                 {errors.confirmPassword && (
                   <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message as string}</p>
