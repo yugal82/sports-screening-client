@@ -22,11 +22,11 @@ type ButtonProps = {
 
 export function Button({ children, variant = 'primary', className = '', ...props }: ButtonProps) {
   const baseClasses =
-    'px-6 py-3 font-semibold rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-brand-dark cursor-pointer border border-white';
+    'px-6 py-3 font-semibold rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#121212] cursor-pointer border border-white';
 
   const variants = {
-    primary: 'bg-brand-green text-brand-dark hover:bg-opacity-90',
-    secondary: 'bg-transparent border border-brand-light text-brand-light hover:bg-brand-light hover:text-brand-dark',
+    primary: 'bg-[#1DB954] text-[#121212] hover:bg-opacity-90',
+    secondary: 'bg-transparent border border-[#FFFFFF] text-[#FFFFFF] hover:bg-[#FFFFFF] hover:text-[#121212]',
   };
 
   const combinedClasses = `${baseClasses} ${variants[variant]} ${className}`;

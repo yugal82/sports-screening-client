@@ -26,7 +26,7 @@ const features = [
 
 export function Features() {
   return (
-    <div className="py-24 bg-brand-dark sm:py-32">
+    <div className="py-24 bg-[#121212] sm:py-32">
       <div className="container mx-auto px-4">
         <div className="text-center">
           <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
@@ -36,12 +36,12 @@ export function Features() {
         <div className="mt-16 grid grid-cols-1 gap-12 md:grid-cols-3">
           {features.map((feature) => (
             <div key={feature?.title} className="flex flex-col items-start text-white">
-              <div className="w-full h-56 bg-brand-dark-gray rounded-lg flex items-center justify-center mb-6">
+              <div className="w-full h-56 bg-[#282828] rounded-lg flex items-center justify-center mb-6">
                 <img src={feature?.imgSrc} alt="" />
               </div>
               <h3 className="text-xl font-bold ">{feature?.title}</h3>
-              <p className="mt-2 text-base text-brand-gray">{feature?.description}</p>
-              <a href="#" className="mt-4 inline-flex items-center font-semibold text-brand-green">
+              <p className="mt-2 text-base text-[#B3B3B3]">{feature?.description}</p>
+              <a href="#" className="mt-4 inline-flex items-center font-semibold text-[#1DB954]">
                 {feature.linkText}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </a>

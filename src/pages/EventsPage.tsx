@@ -80,8 +80,8 @@ export function EventsPage() {
                   classNames(
                     'px-6 py-2 rounded-t text-lg font-semibold focus:outline-none',
                     selected
-                      ? 'border-b-4 border-brand-green text-brand-green bg-transparent shadow-none'
-                      : 'border-b-4 border-transparent text-white hover:text-brand-green bg-transparent transition-colors'
+                      ? 'border-b-4 border-[#1DB954] text-[#1DB954] bg-transparent shadow-none'
+                      : 'border-b-4 border-transparent text-white hover:text-[#1DB954] bg-transparent transition-colors'
                   )
                 }
               >
@@ -98,20 +98,20 @@ export function EventsPage() {
                     {filtered.map((event) => (
                       <div
                         key={event.title + event.date}
-                        className="bg-brand-dark-gray rounded-lg overflow-hidden shadow-[0_4px_24px_0_rgba(100,100,100,0.25)] hover:shadow-[0_8px_32px_0_rgba(100,255,100,0.10)] transition-shadow flex flex-col cursor-pointer border border-[#232323]"
+                        className="bg-[#282828] rounded-lg overflow-hidden shadow-[0_4px_24px_0_rgba(100,100,100,0.25)] hover:shadow-[0_8px_32px_0_rgba(100,255,100,0.10)] transition-shadow flex flex-col cursor-pointer border border-[#232323]"
                       >
                         <img src={event.image} alt={event.title} className="h-40 w-full object-cover" />
                         <div className="p-5 flex-1 flex flex-col justify-between">
                           <div>
                             <h3 className="text-xl font-bold mb-1 text-white">{event.title}</h3>
-                            <div className="text-brand-gray text-sm mb-1">{event.venue}</div>
-                            <div className="text-brand-gray text-sm mb-2">
+                            <div className="text-[#B3B3B3] text-sm mb-1">{event.venue}</div>
+                            <div className="text-[#B3B3B3] text-sm mb-2">
                               {event.date} &nbsp; - &nbsp; {event.time}
                             </div>
                           </div>
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-brand-green text-lg font-bold">${event.price.toFixed(2)}</span>
-                            <span className="text-brand-gray text-xl">&gt;</span>
+                            <span className="text-[#1DB954] text-lg font-bold">${event.price.toFixed(2)}</span>
+                            <span className="text-[#B3B3B3] text-xl">&gt;</span>
                           </div>
                         </div>
                       </div>
