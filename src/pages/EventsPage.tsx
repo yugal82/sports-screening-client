@@ -1,6 +1,7 @@
 import { Tab } from '@headlessui/react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { Link } from 'react-router-dom';
 
 const eventData = [
   {
@@ -65,6 +66,12 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
+const slugify = (str: string) =>
+  str
+    .toLowerCase()
+    .replace(/ /g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+
 export function EventsPage() {
   return (
     <div className="bg-[#121212] min-h-screen text-white">
@@ -96,9 +103,11 @@ export function EventsPage() {
                 <Tab.Panel key={cat}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filtered.map((event) => (
-                      <div
+                      <Link
                         key={event.title + event.date}
-                        className="bg-[#282828] rounded-lg overflow-hidden shadow-[0_4px_24px_0_rgba(100,100,100,0.25)] hover:shadow-[0_8px_32px_0_rgba(100,255,100,0.10)] transition-shadow flex flex-col cursor-pointer border border-[#232323]"
+                        to={`/events/${slugify(event.title)}`}
+                        className="bg-[#282828] rounded-lg overflow-hidden shadow-[0_4px_24px_0_rgba(100,100,100,0.25)] hover:shadow-[0_8px_32px_0_rgba(100,255,100,0.10)] transition-shadow flex flex-col cursor-pointer border border-[#232323] no-underline"
+                        style={{ color: 'inherit' }}
                       >
                         <img src={event.image} alt={event.title} className="h-40 w-full object-cover" />
                         <div className="p-5 flex-1 flex flex-col justify-between">
@@ -114,7 +123,7 @@ export function EventsPage() {
                             <span className="text-[#B3B3B3] text-xl">&gt;</span>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </Tab.Panel>

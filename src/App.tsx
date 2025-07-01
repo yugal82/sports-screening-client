@@ -3,6 +3,7 @@ import { HomePage } from './pages/HomePage';
 import { RegisterPage } from './pages/RegisterPage';
 import { LoginPage } from './pages/LoginPage';
 import { EventsPage } from './pages/EventsPage';
+import { EventDetailsPage } from './pages/EventDetailsPage';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/join" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/events" element={<EventsPage />} />
+        <Route path="/events/:slug" element={<EventDetailsPage />} />
       </Routes>
     </Router>
   );
