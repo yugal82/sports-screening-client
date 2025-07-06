@@ -11,9 +11,13 @@ import {
   Briefcase,
   Rss,
   Info,
+  User,
+  LogOut,
 } from 'lucide-react';
 import { Fragment, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { logout } from '../store/slices/authSlice';
 
 const megaMenuSections = [
   {
@@ -122,6 +126,13 @@ function MoreInfoPopover() {
 }
 
 export function Header() {
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
+
   return (
     <header className="bg-[#121212] text-white backdrop-blur-lg sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -147,18 +158,39 @@ export function Header() {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/join"
-              className="px-4 py-2 text-sm font-medium text-white bg-transparent border border-brand-light rounded-md hover:bg-brand-light hover:text-brand-dark transition-colors"
-            >
-              Join
-            </Link>
-            <Link
-              to="/login"
-              className="px-4 py-2 text-sm font-medium text-brand-dark bg-brand-green border border-brand-green rounded-md hover:opacity-90 transition-opacity"
-            >
-              Login
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-transparent border border-brand-light rounded-md hover:bg-brand-light hover:text-brand-dark transition-colors"
+                >
+                  <User className="h-4 w-4" />
+                  <span>{user?.name || 'Profile'}</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-brand-dark bg-brand-green border border-brand-green rounded-md hover:opacity-90 transition-opacity"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/join"
+                  className="px-4 py-2 text-sm font-medium text-white bg-transparent border border-brand-light rounded-md hover:bg-brand-light hover:text-brand-dark transition-colors"
+                >
+                  Join
+                </Link>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-sm font-medium text-brand-dark bg-brand-green border border-brand-green rounded-md hover:opacity-90 transition-opacity"
+                >
+                  Login
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
