@@ -1,11 +1,14 @@
 import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Chrome, Facebook } from 'lucide-react';
 import LoginImage from '../assets/login_image.webp';
 import { Button } from '../components/Button';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { loginUser, clearError } from '../store/slices/authSlice';
 
 interface LoginFormInputs {
   email: string;
@@ -14,15 +17,33 @@ interface LoginFormInputs {
 }
 
 export function LoginPage() {
+  const dispatch = useAppDispatch();
+  const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormInputs>();
 
-  const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
-    console.log(data);
-    // Handle login logic here
+  // Clear error when component mounts
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
+
+  const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
+    try {
+      await dispatch(
+        loginUser({
+          email: data.email,
+          password: data.password,
+        })
+      ).unwrap();
+      console.log('Login successful!');
+    } catch (error) {
+      console.error('Login failed:', error);
+      // Error is already handled by Redux state
+    }
   };
 
   return (
@@ -33,6 +54,11 @@ export function LoginPage() {
           {/* Form Section */}
           <div className="w-full md:w-1/2 bg-[#282828] p-8">
             <h2 className="text-4xl font-bold mb-8">Login</h2>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded text-red-400 text-sm">{error}</div>
+            )}
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 {/* <label className="block mb-2 text-white font-medium">Email</label> */}
@@ -75,8 +101,8 @@ export function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
-              <Button type="submit" variant="primary" className="w-full text-lg font-bold py-3">
-                Login
+              <Button type="submit" variant="primary" className="w-full text-lg font-bold py-3" disabled={isLoading}>
+                {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
             <div className="flex items-center justify-center py-4">

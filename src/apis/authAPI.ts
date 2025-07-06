@@ -27,6 +27,32 @@ export interface RegisterUserResponse {
     };
 }
 
+// Types for login
+export interface LoginUserRequest {
+    email: string;
+    password: string;
+}
+
+export interface LoginUserResponse {
+    status: boolean;
+    message: string;
+    user: {
+        name: string;
+        email: string;
+        favorites: {
+            sports: string[];
+            drivers: string[];
+            teams: string[];
+        };
+    };
+}
+
+// Types for logout
+export interface LogoutResponse {
+    status: boolean;
+    message: string;
+}
+
 // Create axios instance with base configuration
 const apiClient = axios.create({
     baseURL: BASE_API_URL,
@@ -48,6 +74,32 @@ export const authAPI = {
                 throw new Error(error.response?.data?.message || 'Registration failed');
             }
             throw new Error('Registration failed');
+        }
+    },
+
+    // Login user
+    loginUser: async (credentials: LoginUserRequest): Promise<LoginUserResponse> => {
+        try {
+            const response = await apiClient.post<LoginUserResponse>('users/login', credentials);
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(error.response?.data?.message || 'Login failed');
+            }
+            throw new Error('Login failed');
+        }
+    },
+
+    // Logout user
+    logoutUser: async (): Promise<LogoutResponse> => {
+        try {
+            const response = await apiClient.get<LogoutResponse>('users/logout');
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(error.response?.data?.message || 'Logout failed');
+            }
+            throw new Error('Logout failed');
         }
     },
 };

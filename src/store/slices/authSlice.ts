@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { authAPI } from '../../apis/authAPI';
-import type { RegisterUserRequest } from '../../apis/authAPI';
+import type { RegisterUserRequest, LoginUserRequest } from '../../apis/authAPI';
 
 // Types
 export interface User {
@@ -51,16 +51,36 @@ export const registerUser = createAsyncThunk(
     }
 );
 
-export const loginUser = createAsyncThunk<User, { email: string; password: string }, { rejectValue: string }>(
+export const loginUser = createAsyncThunk<User, LoginUserRequest, { rejectValue: string }>(
     'auth/loginUser',
     async (credentials, { rejectWithValue }) => {
         try {
-            // TODO: Implement login API call
-            // const response = await authAPI.loginUser(credentials);
-            // return response.user;
-            throw new Error('Login API not implemented yet');
+            const response = await authAPI.loginUser(credentials);
+            // Transform the response to match our User interface
+            const user: User = {
+                name: response.user.name,
+                email: response.user.email,
+                favorites: {
+                    sports: response.user.favorites.sports,
+                    drivers: response.user.favorites.drivers,
+                    teams: response.user.favorites.teams,
+                },
+            };
+            return user;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Login failed');
+        }
+    }
+);
+
+export const logoutUser = createAsyncThunk(
+    'auth/logoutUser',
+    async (_, { rejectWithValue }) => {
+        try {
+            await authAPI.logoutUser();
+            return true;
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Logout failed');
         }
     }
 );
@@ -113,6 +133,21 @@ const authSlice = createSlice({
                 state.error = null;
             })
             .addCase(loginUser.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload as string;
+            })
+            // Logout user
+            .addCase(logoutUser.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(logoutUser.fulfilled, (state) => {
+                state.isLoading = false;
+                state.user = null;
+                state.isAuthenticated = false;
+                state.error = null;
+            })
+            .addCase(logoutUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             });
