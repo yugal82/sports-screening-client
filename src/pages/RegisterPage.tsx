@@ -2,12 +2,14 @@ import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Chrome, Facebook } from 'lucide-react';
 import RegisterImage from '../assets/register_image.webp';
 import { Button } from '../components/Button';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { registerUser, clearError } from '../store/slices/authSlice';
 
 const SPORT_OPTIONS = [
   { label: 'Football', value: 'football' },
@@ -47,6 +49,9 @@ type RegisterFormInputs = {
 };
 
 export function RegisterPage() {
+  const dispatch = useAppDispatch();
+  const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+
   const {
     register,
     handleSubmit,
@@ -61,9 +66,16 @@ export function RegisterPage() {
   const [teamDialogIndex, setTeamDialogIndex] = useState(0);
   const [showTeamDialog, setShowTeamDialog] = useState(false);
   const [selectedTeams, setSelectedTeams] = useState<{ [sport: string]: string[] }>({});
+  const [formData, setFormData] = useState<RegisterFormInputs | null>(null);
+
+  // Clear error when component mounts
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
 
   // Open sport dialog on submit
   const onSubmit: SubmitHandler<RegisterFormInputs> = (data) => {
+    setFormData(data);
     setShowSportDialog(true);
   };
 
@@ -82,14 +94,40 @@ export function RegisterPage() {
   };
 
   // Handle team dialog next
-  const handleTeamDialogNext = () => {
+  const handleTeamDialogNext = async () => {
     if (teamDialogIndex < selectedSports.length - 1) {
       setTeamDialogIndex(teamDialogIndex + 1);
     } else {
       setShowTeamDialog(false);
-      // Log the selections
-      console.log('Selected sports:', selectedSports);
-      console.log('Selected teams:', selectedTeams);
+
+      // Prepare the API payload
+      if (formData) {
+        // Transform selected teams to match API structure
+        const allTeams = Object.values(selectedTeams).flat();
+        // const drivers = selectedSports.includes('f1') ? ['Lewis Hamilton', 'Max Verstappen'] : [];
+
+        const payload = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          favorites: {
+            sports: selectedSports.map((sport) =>
+              sport === 'football' ? 'Football' : sport === 'f1' ? 'F1' : sport === 'cricket' ? 'Cricket' : sport
+            ),
+            // drivers: drivers,
+            teams: allTeams,
+          },
+        };
+
+        try {
+          await dispatch(registerUser(payload)).unwrap();
+          // User is now registered and logged in automatically
+          console.log('Registration successful!');
+        } catch (error) {
+          console.error('Registration failed:', error);
+          // Error is already handled by Redux state
+        }
+      }
     }
   };
 
@@ -124,6 +162,11 @@ export function RegisterPage() {
           {/* Form Section */}
           <div className="w-full md:w-1/2 bg-[#282828] p-12 flex flex-col justify-center">
             <h2 className="text-4xl font-bold mb-8 text-center">Join us now</h2>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded text-red-400 text-sm">{error}</div>
+            )}
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <input
@@ -179,8 +222,8 @@ export function RegisterPage() {
                 )}
               </div>
 
-              <Button type="submit" variant="primary" className="w-full">
-                Sign Up
+              <Button type="submit" variant="primary" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Signing Up...' : 'Sign Up'}
               </Button>
             </form>
 
@@ -264,11 +307,11 @@ export function RegisterPage() {
                   ))}
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="secondary" onClick={() => setShowTeamDialog(false)}>
+                  <Button variant="secondary" onClick={() => setShowTeamDialog(false)} disabled={isLoading}>
                     Cancel
                   </Button>
-                  <Button variant="primary" onClick={handleTeamDialogNext}>
-                    {teamDialogIndex < selectedSports.length - 1 ? 'Next' : 'Finish'}
+                  <Button variant="primary" onClick={handleTeamDialogNext} disabled={isLoading}>
+                    {isLoading ? 'Registering...' : teamDialogIndex < selectedSports.length - 1 ? 'Next' : 'Finish'}
                   </Button>
                 </div>
               </>
