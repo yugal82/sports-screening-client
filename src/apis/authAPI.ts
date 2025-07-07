@@ -53,6 +53,21 @@ export interface LogoutResponse {
     message: string;
 }
 
+// Types for token validation
+export interface ValidateTokenResponse {
+    status: boolean;
+    message: string;
+    user: {
+        name: string;
+        email: string;
+        favorites: {
+            sports: string[];
+            drivers: string[];
+            teams: string[];
+        };
+    };
+}
+
 // Create axios instance with base configuration
 const apiClient = axios.create({
     baseURL: BASE_API_URL,
@@ -100,6 +115,19 @@ export const authAPI = {
                 throw new Error(error.response?.data?.message || 'Logout failed');
             }
             throw new Error('Logout failed');
+        }
+    },
+
+    // Validate JWT token
+    validateToken: async (): Promise<ValidateTokenResponse> => {
+        try {
+            const response = await apiClient.get<ValidateTokenResponse>('users/me');
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(error.response?.data?.message || 'Token validation failed');
+            }
+            throw new Error('Token validation failed');
         }
     },
 };

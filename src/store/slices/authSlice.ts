@@ -19,6 +19,7 @@ export interface AuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
+    isInitialized: boolean;
 }
 
 const initialState: AuthState = {
@@ -26,6 +27,7 @@ const initialState: AuthState = {
     isAuthenticated: false,
     isLoading: false,
     error: null,
+    isInitialized: false,
 };
 
 // Async thunks
@@ -81,6 +83,28 @@ export const logoutUser = createAsyncThunk(
             return true;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Logout failed');
+        }
+    }
+);
+
+export const validateAuth = createAsyncThunk(
+    'auth/validateAuth',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await authAPI.validateToken();
+            // Transform the response to match our User interface
+            const user: User = {
+                name: response.user.name,
+                email: response.user.email,
+                favorites: {
+                    sports: response.user.favorites.sports,
+                    drivers: response.user.favorites.drivers,
+                    teams: response.user.favorites.teams,
+                },
+            };
+            return user;
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Token validation failed');
         }
     }
 );
@@ -150,6 +174,25 @@ const authSlice = createSlice({
             .addCase(logoutUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
+            })
+            // Validate auth
+            .addCase(validateAuth.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(validateAuth.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.user = action.payload;
+                state.isAuthenticated = true;
+                state.error = null;
+                state.isInitialized = true;
+            })
+            .addCase(validateAuth.rejected, (state) => {
+                state.isLoading = false;
+                state.user = null;
+                state.isAuthenticated = false;
+                state.error = null;
+                state.isInitialized = true;
             });
     },
 });
