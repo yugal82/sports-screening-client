@@ -1,31 +1,88 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
-import { MapPin, Calendar, DollarSign } from 'lucide-react';
-import { useState } from 'react';
+import { MapPin, Calendar, DollarSign, Clock, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
+import { useAppSelector } from '../store/hooks';
+import type { Event } from '../apis/eventsAPI';
 
-// Dummy event data (in real app, fetch by ID)
-const EVENT_DATA = {
-  id: 'event-12345',
-  image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=900&q=80',
-  name: 'Real Madrid vs Barcelona',
-  venue: 'Green Sports Bar',
-  date: 'July 11, 2024',
-  time: '3:00 PM',
-  price: 25.0,
+// Helper function to get event title based on sports category
+const getEventTitle = (event: Event): string => {
+  switch (event.sportsCategory) {
+    case 'football':
+      return event.football ? `${event.football.homeTeam} vs ${event.football.awayTeam}` : 'Football Match';
+    case 'cricket':
+      return event.cricket ? `${event.cricket.homeTeam} vs ${event.cricket.awayTeam}` : 'Cricket Match';
+    case 'f1':
+      return event.f1 ? `${event.f1.driver} - ${event.f1.team}` : 'F1 Race';
+    default:
+      return `${event.sportsCategory.charAt(0).toUpperCase() + event.sportsCategory.slice(1)} Event`;
+  }
 };
 
+// Helper function to format date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+// Helper function to slugify
+const slugify = (str: string) =>
+  str
+    .toLowerCase()
+    .replace(/ /g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+
 export function EventDetailsPage() {
-  // const { id } = useParams(); // For real app, use this to fetch event
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const { events } = useAppSelector((state) => state.events);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [showQR, setShowQR] = useState(false);
 
+  useEffect(() => {
+    if (events.length > 0 && slug) {
+      // Find event by slug
+      const event = events.find((event) => {
+        const eventTitle = getEventTitle(event);
+        const eventSlug = slugify(eventTitle);
+        return eventSlug === slug;
+      });
+
+      if (event) {
+        setSelectedEvent(event);
+      } else {
+        // Event not found, redirect to events page
+        navigate('/events');
+      }
+    }
+  }, [events, slug, navigate]);
+
+  if (!selectedEvent) {
+    return (
+      <div className="bg-[#121212] min-h-screen text-white">
+        <Header />
+        <main className="container mx-auto px-8 py-12 min-h-[80vh] flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1DB954] mx-auto mb-4"></div>
+            <p className="text-[#B3B3B3]">Loading event details...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   const qrPayload = JSON.stringify({
-    eventId: EVENT_DATA.id,
-    eventName: EVENT_DATA.name,
-    date: EVENT_DATA.date,
-    time: EVENT_DATA.time,
+    eventId: selectedEvent._id,
+    eventName: getEventTitle(selectedEvent),
+    date: formatDate(selectedEvent.date),
+    time: selectedEvent.time,
     quantity,
   });
 
@@ -36,29 +93,51 @@ export function EventDetailsPage() {
         {/* Left: Image */}
         <div className="flex-1 flex items-center justify-center bg-[#121212]">
           <img
-            src={EVENT_DATA.image}
-            alt={EVENT_DATA.name}
+            src={selectedEvent.image}
+            alt={getEventTitle(selectedEvent)}
             className="object-cover rounded-2xl max-h-[80vh] w-full max-w-2xl"
             style={{ boxShadow: '0 8px 32px 0 rgba(0,0,0,0.5)' }}
+            onError={(e) => {
+              // Fallback image if the event image fails to load
+              (e.target as HTMLImageElement).src =
+                'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=900&q=80';
+            }}
           />
         </div>
         {/* Right: Details */}
         <div className="flex-1 flex flex-col justify-center px-12 py-8 max-w-xl">
-          <h1 className="text-4xl font-bold text-white mb-6">{EVENT_DATA.name}</h1>
+          <h1 className="text-4xl font-bold text-white mb-6">{getEventTitle(selectedEvent)}</h1>
+
+          {/* Venue */}
           <div className="flex items-center text-[#1DB954] mb-4 text-lg font-medium">
             <MapPin className="w-5 h-5 mr-2" />
-            <span className="text-[#1DB954]">{EVENT_DATA.venue}</span>
+            <span className="text-[#1DB954]">{selectedEvent.venue}</span>
           </div>
+
+          {/* Date and Time */}
           <div className="flex items-center text-white mb-4 text-lg">
             <Calendar className="w-5 h-5 mr-2 text-[#1DB954]" />
+            <span>{formatDate(selectedEvent.date)}</span>
+          </div>
+          <div className="flex items-center text-white mb-4 text-lg">
+            <Clock className="w-5 h-5 mr-2 text-[#1DB954]" />
             <span>
-              {EVENT_DATA.date}, {EVENT_DATA.time}
+              {selectedEvent.time} ({selectedEvent.timeZone})
             </span>
           </div>
+
+          {/* Max Occupancy */}
+          <div className="flex items-center text-white mb-6 text-lg">
+            <Users className="w-5 h-5 mr-2 text-[#1DB954]" />
+            <span>Max Occupancy: {selectedEvent.maxOccupancy} people</span>
+          </div>
+
+          {/* Price */}
           <div className="flex items-center text-white mb-8 text-lg">
             <DollarSign className="w-5 h-5 mr-2 text-[#1DB954]" />
-            <span className="text-[#1DB954] font-bold text-xl">${EVENT_DATA.price.toFixed(2)}</span>
+            <span className="text-[#1DB954] font-bold text-xl">₹{selectedEvent.price.toFixed(2)}</span>
           </div>
+
           <div className="mb-8">
             <select
               value={quantity}

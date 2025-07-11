@@ -1,9 +1,11 @@
 import { Tab } from '@headlessui/react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { useState, useEffect } from 'react';
-import { getAllEvents, type Event } from '../apis/eventsAPI';
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { fetchEvents } from '../store/slices/eventsSlice';
 import { EventCard } from '../components/EventCard';
+import type { Event } from '../apis/eventsAPI';
 
 const categories = ['All', 'Football', 'F1', 'Cricket'];
 
@@ -56,29 +58,14 @@ const getCategoryDisplayName = (sportsCategory: string): string => {
 };
 
 export function EventsPage() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { events, isLoading, error } = useAppSelector((state) => state.events);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await getAllEvents();
-        setEvents(response.events);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch events');
-        console.error('Error fetching events:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    dispatch(fetchEvents());
+  }, [dispatch]);
 
-    fetchEvents();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="bg-[#121212] min-h-screen text-white">
         <Header />
@@ -86,6 +73,26 @@ export function EventsPage() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1DB954] mx-auto mb-4"></div>
             <p className="text-[#B3B3B3]">Loading events...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-[#121212] min-h-screen text-white">
+        <Header />
+        <main className="container mx-auto px-8 py-12 min-h-[80vh] flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-500 mb-4">Error: {error}</p>
+            <button
+              onClick={() => dispatch(fetchEvents())}
+              className="bg-[#1DB954] text-[#121212] px-6 py-2 rounded-md hover:bg-opacity-90 transition"
+            >
+              Try Again
+            </button>
           </div>
         </main>
         <Footer />
