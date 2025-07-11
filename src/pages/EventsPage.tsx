@@ -1,64 +1,9 @@
 import { Tab } from '@headlessui/react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { Link } from 'react-router-dom';
-
-const eventData = [
-  {
-    title: 'Real Madrid vs Barcelona',
-    venue: 'Sports Lounge',
-    date: 'May 20, 2024',
-    time: '7:00 PM',
-    price: 25.0,
-    category: 'Football',
-    image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Monaco Grand Prix',
-    venue: 'Race On Pub',
-    date: 'May 18, 2024',
-    time: '2:00 PM',
-    price: 50.0,
-    category: 'F1',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Australia vs England',
-    venue: 'The Oval',
-    date: 'May 22, 2024',
-    time: '10:00 AM',
-    price: 20.0,
-    category: 'Cricket',
-    image: 'https://images.unsplash.com/photo-1505843275257-8493c9b1b4c6?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Manchester City vs Liverpool',
-    venue: 'The Sports Hub',
-    date: 'May 24, 2024',
-    time: '6:30 PM',
-    price: 22.5,
-    category: 'Football',
-    image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Italian Grand Prix',
-    venue: 'Grandstand Grill',
-    date: 'May 23, 2024',
-    time: '1:00 PM',
-    price: 29.0,
-    category: 'F1',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'India vs South Africa',
-    venue: 'Eden Gardens',
-    date: 'May 28, 2024',
-    time: '3:00 PM',
-    price: 18.0,
-    category: 'Cricket',
-    image: 'https://images.unsplash.com/photo-1505843275257-8493c9b1b4c6?auto=format&fit=crop&w=600&q=80',
-  },
-];
+import { useState, useEffect } from 'react';
+import { getAllEvents, type Event } from '../apis/eventsAPI';
+import { EventCard } from '../components/EventCard';
 
 const categories = ['All', 'Football', 'F1', 'Cricket'];
 
@@ -72,7 +17,82 @@ const slugify = (str: string) =>
     .replace(/ /g, '-')
     .replace(/[^a-z0-9-]/g, '');
 
+// Helper function to format date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+// Helper function to get event title based on sports category
+const getEventTitle = (event: Event): string => {
+  switch (event.sportsCategory) {
+    case 'football':
+      return event.football ? `${event.football.homeTeam} vs ${event.football.awayTeam}` : 'Football Match';
+    case 'cricket':
+      return event.cricket ? `${event.cricket.homeTeam} vs ${event.cricket.awayTeam}` : 'Cricket Match';
+    case 'f1':
+      return event.f1 ? `${event.f1.driver} - ${event.f1.team}` : 'F1 Race';
+    default:
+      return `${event.sportsCategory.charAt(0).toUpperCase() + event.sportsCategory.slice(1)} Event`;
+  }
+};
+
+// Helper function to get category display name
+const getCategoryDisplayName = (sportsCategory: string): string => {
+  switch (sportsCategory) {
+    case 'football':
+      return 'Football';
+    case 'cricket':
+      return 'Cricket';
+    case 'f1':
+      return 'F1';
+    default:
+      return sportsCategory.charAt(0).toUpperCase() + sportsCategory.slice(1);
+  }
+};
+
 export function EventsPage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getAllEvents();
+        setEvents(response.events);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch events');
+        console.error('Error fetching events:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-[#121212] min-h-screen text-white">
+        <Header />
+        <main className="container mx-auto px-8 py-12 min-h-[80vh] flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1DB954] mx-auto mb-4"></div>
+            <p className="text-[#B3B3B3]">Loading events...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#121212] min-h-screen text-white">
       <Header />
@@ -98,34 +118,27 @@ export function EventsPage() {
           </Tab.List>
           <Tab.Panels>
             {categories.map((cat) => {
-              const filtered = cat === 'All' ? eventData : eventData.filter((e) => e.category === cat);
+              const filtered =
+                cat === 'All' ? events : events.filter((e) => getCategoryDisplayName(e.sportsCategory) === cat);
               return (
                 <Tab.Panel key={cat}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filtered.map((event) => (
-                      <Link
-                        key={event.title + event.date}
-                        to={`/events/${slugify(event.title)}`}
-                        className="bg-[#282828] rounded-lg overflow-hidden shadow-[0_4px_24px_0_rgba(100,100,100,0.25)] hover:shadow-[0_8px_32px_0_rgba(100,255,100,0.10)] transition-shadow flex flex-col cursor-pointer border border-[#232323] no-underline"
-                        style={{ color: 'inherit' }}
-                      >
-                        <img src={event.image} alt={event.title} className="h-40 w-full object-cover" />
-                        <div className="p-5 flex-1 flex flex-col justify-between">
-                          <div>
-                            <h3 className="text-xl font-bold mb-1 text-white">{event.title}</h3>
-                            <div className="text-[#B3B3B3] text-sm mb-1">{event.venue}</div>
-                            <div className="text-[#B3B3B3] text-sm mb-2">
-                              {event.date} &nbsp; - &nbsp; {event.time}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-[#1DB954] text-lg font-bold">${event.price.toFixed(2)}</span>
-                            <span className="text-[#B3B3B3] text-xl">&gt;</span>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
+                  {filtered.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-[#B3B3B3] text-lg">No events found for {cat}</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {filtered.map((event) => (
+                        <EventCard
+                          key={event._id}
+                          event={event}
+                          slugify={slugify}
+                          getEventTitle={getEventTitle}
+                          formatDate={formatDate}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </Tab.Panel>
               );
             })}
