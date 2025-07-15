@@ -13,6 +13,24 @@ export interface RegisterUserRequest {
     };
 }
 
+export interface Booking {
+    _id: string;
+    userId: string;
+    eventId: {
+        _id: string;
+        sportsCategory: string;
+        venue: string;
+        date: string;
+        time: string;
+        price: number;
+        image: string;
+    };
+    quantity: number;
+    price: number;
+    qrCodeData: string;
+    createdAt: string;
+}
+
 export interface RegisterUserResponse {
     status: boolean;
     message: string;
@@ -24,6 +42,7 @@ export interface RegisterUserResponse {
             drivers?: string[];
             teams?: string[];
         };
+        bookings?: Booking[];
     };
 }
 
@@ -44,6 +63,7 @@ export interface LoginUserResponse {
             drivers: string[];
             teams: string[];
         };
+        bookings: Booking[];
     };
 }
 
@@ -65,6 +85,7 @@ export interface ValidateTokenResponse {
             drivers: string[];
             teams: string[];
         };
+        bookings: Booking[];
     };
 }
 

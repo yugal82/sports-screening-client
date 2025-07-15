@@ -4,6 +4,24 @@ import { authAPI } from '../../apis/authAPI';
 import type { RegisterUserRequest, LoginUserRequest } from '../../apis/authAPI';
 
 // Types
+export interface Booking {
+    _id: string;
+    userId: string;
+    eventId: {
+        _id: string;
+        sportsCategory: string;
+        venue: string;
+        date: string;
+        time: string;
+        price: number;
+        image: string;
+    };
+    quantity: number;
+    price: number;
+    qrCodeData: string;
+    createdAt: string;
+}
+
 export interface User {
     name: string;
     email: string;
@@ -12,6 +30,7 @@ export interface User {
         drivers: string[];
         teams: string[];
     };
+    bookings: Booking[];
 }
 
 export interface AuthState {
@@ -45,6 +64,7 @@ export const registerUser = createAsyncThunk(
                     drivers: response.user.favorites.drivers || [],
                     teams: response.user.favorites.teams || [],
                 },
+                bookings: response.user.bookings || [],
             };
             return user;
         } catch (error) {
@@ -67,6 +87,7 @@ export const loginUser = createAsyncThunk<User, LoginUserRequest, { rejectValue:
                     drivers: response.user.favorites.drivers,
                     teams: response.user.favorites.teams,
                 },
+                bookings: response.user.bookings || [],
             };
             return user;
         } catch (error) {
@@ -101,6 +122,7 @@ export const validateAuth = createAsyncThunk(
                     drivers: response.user.favorites.drivers,
                     teams: response.user.favorites.teams,
                 },
+                bookings: response.user.bookings || [],
             };
             return user;
         } catch (error) {
