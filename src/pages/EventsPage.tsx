@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchEvents } from '../store/slices/eventsSlice';
 import { EventCard } from '../components/EventCard';
-import type { Event } from '../apis/eventsAPI';
+import type { Event } from '../utils/types';
 
 const categories = ['All', 'Football', 'F1', 'Cricket'];
 

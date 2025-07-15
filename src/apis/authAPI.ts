@@ -1,93 +1,13 @@
 import axios from 'axios';
 import { BASE_API_URL } from '../utils/constants';
-
-// Types for registration
-export interface RegisterUserRequest {
-    name: string;
-    email: string;
-    password: string;
-    favorites: {
-        sports?: string[];
-        drivers?: string[];
-        teams?: string[];
-    };
-}
-
-export interface Booking {
-    _id: string;
-    userId: string;
-    eventId: {
-        _id: string;
-        sportsCategory: string;
-        venue: string;
-        date: string;
-        time: string;
-        price: number;
-        image: string;
-    };
-    quantity: number;
-    price: number;
-    qrCodeData: string;
-    createdAt: string;
-}
-
-export interface RegisterUserResponse {
-    status: boolean;
-    message: string;
-    user: {
-        name: string;
-        email: string;
-        favorites: {
-            sports?: string[];
-            drivers?: string[];
-            teams?: string[];
-        };
-        bookings?: Booking[];
-    };
-}
-
-// Types for login
-export interface LoginUserRequest {
-    email: string;
-    password: string;
-}
-
-export interface LoginUserResponse {
-    status: boolean;
-    message: string;
-    user: {
-        name: string;
-        email: string;
-        favorites: {
-            sports: string[];
-            drivers: string[];
-            teams: string[];
-        };
-        bookings: Booking[];
-    };
-}
-
-// Types for logout
-export interface LogoutResponse {
-    status: boolean;
-    message: string;
-}
-
-// Types for token validation
-export interface ValidateTokenResponse {
-    status: boolean;
-    message: string;
-    user: {
-        name: string;
-        email: string;
-        favorites: {
-            sports: string[];
-            drivers: string[];
-            teams: string[];
-        };
-        bookings: Booking[];
-    };
-}
+import type {
+    RegisterUserRequest,
+    LoginUserRequest,
+    RegisterUserResponse,
+    LoginUserResponse,
+    LogoutResponse,
+    ValidateTokenResponse,
+} from '../utils/types';
 
 // Create axios instance with base configuration
 const apiClient = axios.create({

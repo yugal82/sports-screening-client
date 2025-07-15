@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
+import type { Event } from '../utils/types';
 import { MapPin, Clock, DollarSign } from 'lucide-react';
-import type { Event } from '../apis/eventsAPI';
 
 interface EventCardProps {
   event: Event;

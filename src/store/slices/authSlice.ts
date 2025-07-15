@@ -1,45 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { authAPI } from '../../apis/authAPI';
-import type { RegisterUserRequest, LoginUserRequest } from '../../apis/authAPI';
-
-// Types
-export interface Booking {
-    _id: string;
-    userId: string;
-    eventId: {
-        _id: string;
-        sportsCategory: string;
-        venue: string;
-        date: string;
-        time: string;
-        price: number;
-        image: string;
-    };
-    quantity: number;
-    price: number;
-    qrCodeData: string;
-    createdAt: string;
-}
-
-export interface User {
-    name: string;
-    email: string;
-    favorites: {
-        sports: string[];
-        drivers: string[];
-        teams: string[];
-    };
-    bookings: Booking[];
-}
-
-export interface AuthState {
-    user: User | null;
-    isAuthenticated: boolean;
-    isLoading: boolean;
-    error: string | null;
-    isInitialized: boolean;
-}
+import type {
+    RegisterUserRequest,
+    LoginUserRequest,
+    User,
+    AuthState
+} from '../../utils/types';
 
 const initialState: AuthState = {
     user: null,

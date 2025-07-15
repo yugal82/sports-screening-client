@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import { useAppSelector } from '../store/hooks';
-import type { Event } from '../apis/eventsAPI';
+import type { Event } from '../utils/types';
 
 // Helper function to get event title based on sports category
 const getEventTitle = (event: Event): string => {

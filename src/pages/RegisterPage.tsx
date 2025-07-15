@@ -50,7 +50,7 @@ type RegisterFormInputs = {
 
 export function RegisterPage() {
   const dispatch = useAppDispatch();
-  const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isLoading, error } = useAppSelector((state) => state.auth);
 
   const {
     register,

@@ -18,7 +18,7 @@ interface LoginFormInputs {
 
 export function LoginPage() {
   const dispatch = useAppDispatch();
-  const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isLoading, error } = useAppSelector((state) => state.auth);
 
   const {
     register,
