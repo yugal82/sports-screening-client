@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import { useAppSelector } from '../store/hooks';
+import { Dialog } from '@headlessui/react';
 
 // Team logo mapping
 const teamLogos: { [key: string]: string } = {
@@ -47,6 +49,8 @@ export default function ProfilePage() {
   const [editPassword, setEditPassword] = useState('');
   const [editError, setEditError] = useState('');
   const [editSuccess, setEditSuccess] = useState('');
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [showQR, setShowQR] = useState(false);
 
   // If no user data, show loading or redirect
   if (!user) {
@@ -71,6 +75,11 @@ export default function ProfilePage() {
     }
     setEditSuccess('Profile updated!');
   }
+
+  const handleShowQR = (booking: any) => {
+    setSelectedBooking(booking);
+    setShowQR(true);
+  };
 
   // Create favorites array with logos
   const favorites = [
@@ -151,11 +160,12 @@ export default function ProfilePage() {
                         key={booking._id}
                         className="bg-[#181818] rounded-lg overflow-hidden shadow-[0_4px_24px_0_rgba(100,100,100,0.25)] hover:shadow-[0_8px_32px_0_rgba(100,255,100,0.10)] transition-shadow flex flex-col cursor-pointer border border-[#232323] relative"
                       >
-                        <img
-                          src={booking.eventId.image}
-                          alt={`${booking.eventId.sportsCategory} event`}
-                          className="h-40 w-full object-cover"
-                        />
+                        <div className="h-40 w-full bg-gradient-to-br from-[#1DB954] to-[#1ed760] flex items-center justify-center">
+                          <div className="text-center text-white">
+                            <div className="text-2xl font-bold capitalize mb-2">{booking.eventId.sportsCategory}</div>
+                            <div className="text-sm opacity-90">Event</div>
+                          </div>
+                        </div>
                         <div className="p-5 flex-1 flex flex-col justify-between">
                           <div>
                             <h3 className="text-xl font-bold mb-1 text-white capitalize">
@@ -206,7 +216,13 @@ export default function ProfilePage() {
                             <div className="text-[#B3B3B3] text-sm mb-2">Quantity: {booking.quantity}</div>
                           </div>
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-[#1DB954] text-lg font-bold">${booking.price.toFixed(2)}</span>
+                            <span className="text-[#1DB954] text-lg font-bold">₹{booking.price.toFixed(2)}</span>
+                            <button
+                              onClick={() => handleShowQR(booking)}
+                              className="px-3 py-1 bg-[#1DB954] text-[#121212] text-xs font-bold rounded hover:bg-opacity-90 transition"
+                            >
+                              Show QR
+                            </button>
                           </div>
                         </div>
                         <span className="absolute top-4 right-4 bg-[#1DB954] text-[#121212] text-xs font-bold px-3 py-1 rounded-full shadow">
@@ -260,6 +276,31 @@ export default function ProfilePage() {
         </div>
       </main>
       <Footer />
+
+      {/* QR Code Dialog */}
+      <Dialog open={showQR} onClose={() => setShowQR(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center">
+          <Dialog.Panel className="bg-[#121212] rounded-xl p-8 shadow-2xl flex flex-col items-center max-w-md">
+            <Dialog.Title className="text-2xl font-bold text-[#1DB954] mb-4 text-center">
+              Event Pass QR Code
+            </Dialog.Title>
+            <p className="text-[#B3B3B3] text-center mb-6">Show this QR code at the venue to validate your pass.</p>
+            {selectedBooking && <QRCodeDisplay value={selectedBooking.qrCodeData} size={240} />}
+            <div className="mt-6 text-center">
+              <p className="text-[#B3B3B3] text-sm mb-2">Booking ID: {selectedBooking?._id}</p>
+              <p className="text-[#B3B3B3] text-sm">
+                Quantity: {selectedBooking?.quantity} | Total: ₹{selectedBooking?.price}
+              </p>
+            </div>
+            <button
+              className="mt-6 px-6 py-2 rounded-md text-sm font-medium border border-[#535353] text-[#B3B3B3] hover:border-[#1DB954] hover:text-[#1DB954] transition"
+              onClick={() => setShowQR(false)}
+            >
+              Close
+            </button>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 }

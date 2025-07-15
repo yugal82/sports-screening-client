@@ -1,10 +1,18 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
 import { MapPin, Calendar, DollarSign, Clock, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
-import { useAppSelector } from '../store/hooks';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import {
+  createBooking,
+  clearBookingError,
+  clearBookingSuccess,
+  clearCurrentBooking,
+} from '../store/slices/bookingsSlice';
+import { addBooking } from '../store/slices/authSlice';
 import type { Event } from '../utils/types';
 
 // Helper function to get event title based on sports category
@@ -41,7 +49,9 @@ const slugify = (str: string) =>
 export function EventDetailsPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { events } = useAppSelector((state) => state.events);
+  const { currentBooking, isLoading, error, success } = useAppSelector((state) => state.bookings);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [showQR, setShowQR] = useState(false);
@@ -64,6 +74,41 @@ export function EventDetailsPage() {
     }
   }, [events, slug, navigate]);
 
+  // Clear booking state when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(clearCurrentBooking());
+      dispatch(clearBookingError());
+      dispatch(clearBookingSuccess());
+    };
+  }, [dispatch]);
+
+  // Show QR code when booking is successful
+  useEffect(() => {
+    if (currentBooking && success) {
+      setShowQR(true);
+      // Add the booking to the user's bookings
+      dispatch(addBooking(currentBooking));
+    }
+  }, [currentBooking, success, dispatch]);
+
+  const handlePurchase = async () => {
+    if (!selectedEvent) return;
+
+    try {
+      await dispatch(
+        createBooking({
+          eventId: selectedEvent._id,
+          quantity: quantity,
+          price: selectedEvent.price * quantity,
+        })
+      ).unwrap();
+    } catch (error) {
+      // Error is handled by the Redux slice
+      console.error('Booking failed:', error);
+    }
+  };
+
   if (!selectedEvent) {
     return (
       <div className="bg-[#121212] min-h-screen text-white">
@@ -74,28 +119,21 @@ export function EventDetailsPage() {
             <p className="text-[#B3B3B3]">Loading event details...</p>
           </div>
         </main>
+        <Footer />
       </div>
     );
   }
 
-  const qrPayload = JSON.stringify({
-    eventId: selectedEvent._id,
-    eventName: getEventTitle(selectedEvent),
-    date: formatDate(selectedEvent.date),
-    time: selectedEvent.time,
-    quantity,
-  });
-
   return (
-    <div className="bg-[#121212] min-h-screen w-full" style={{ height: '100vh', overflow: 'hidden' }}>
+    <div className="bg-[#121212] min-h-screen text-white">
       <Header />
-      <div className="flex w-full h-[calc(100vh-80px)] max-h-[calc(100vh-80px)]">
+      <main className="flex flex-col lg:flex-row min-h-screen">
         {/* Left: Image */}
-        <div className="flex-1 flex items-center justify-center bg-[#121212]">
+        <div className="lg:flex-1 flex items-center justify-center bg-[#121212] p-8">
           <img
             src={selectedEvent.image}
             alt={getEventTitle(selectedEvent)}
-            className="object-cover rounded-2xl max-h-[80vh] w-full max-w-2xl"
+            className="object-cover rounded-2xl w-full max-w-2xl"
             style={{ boxShadow: '0 8px 32px 0 rgba(0,0,0,0.5)' }}
             onError={(e) => {
               // Fallback image if the event image fails to load
@@ -105,75 +143,125 @@ export function EventDetailsPage() {
           />
         </div>
         {/* Right: Details */}
-        <div className="flex-1 flex flex-col justify-center px-12 py-8 max-w-xl">
-          <h1 className="text-4xl font-bold text-white mb-6">{getEventTitle(selectedEvent)}</h1>
+        <div className="lg:flex-1 flex flex-col justify-center p-8 max-w-xl mx-auto">
+          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-6">{getEventTitle(selectedEvent)}</h1>
 
           {/* Venue */}
-          <div className="flex items-center text-[#1DB954] mb-4 text-lg font-medium">
+          <div className="flex items-center text-[#1DB954] mb-2 text-lg font-medium">
             <MapPin className="w-5 h-5 mr-2" />
             <span className="text-[#1DB954]">{selectedEvent.venue}</span>
           </div>
 
-          {/* Date and Time */}
-          <div className="flex items-center text-white mb-4 text-lg">
-            <Calendar className="w-5 h-5 mr-2 text-[#1DB954]" />
-            <span>{formatDate(selectedEvent.date)}</span>
-          </div>
-          <div className="flex items-center text-white mb-4 text-lg">
-            <Clock className="w-5 h-5 mr-2 text-[#1DB954]" />
-            <span>
-              {selectedEvent.time} ({selectedEvent.timeZone})
-            </span>
+          {/* Date and Time in same row */}
+          <div className="grid grid-cols-2 gap-4 mb-2">
+            <div className="flex items-center text-white text-lg">
+              <Calendar className="w-5 h-5 mr-2 text-[#1DB954]" />
+              <span>{formatDate(selectedEvent.date)}</span>
+            </div>
+            <div className="flex items-center text-white text-lg">
+              <Clock className="w-5 h-5 mr-2 text-[#1DB954]" />
+              <span>
+                {selectedEvent.time} ({selectedEvent.timeZone})
+              </span>
+            </div>
           </div>
 
-          {/* Max Occupancy */}
-          <div className="flex items-center text-white mb-6 text-lg">
-            <Users className="w-5 h-5 mr-2 text-[#1DB954]" />
-            <span>Max Occupancy: {selectedEvent.maxOccupancy} people</span>
+          {/* Max Occupancy and Available Seats in same row */}
+          <div className="grid grid-cols-2 gap-4 mb-2">
+            <div className="flex items-center text-white text-lg">
+              <Users className="w-5 h-5 mr-2 text-[#1DB954]" />
+              <span>Max: {selectedEvent.maxOccupancy}</span>
+            </div>
+            <div className="flex items-center text-white text-lg">
+              <Users className="w-5 h-5 mr-2 text-[#1DB954]" />
+              <span>Available: {selectedEvent.availableSeats}</span>
+            </div>
           </div>
 
           {/* Price */}
-          <div className="flex items-center text-white mb-8 text-lg">
+          <div className="flex items-center text-white mb-4 text-lg">
             <DollarSign className="w-5 h-5 mr-2 text-[#1DB954]" />
             <span className="text-[#1DB954] font-bold text-xl">₹{selectedEvent.price.toFixed(2)}</span>
           </div>
 
-          <div className="mb-8">
-            <select
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              className="w-full bg-transparent border border-[#535353] text-white py-3 px-4 rounded-md text-lg outline-none focus:border-[#1DB954]"
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-4 bg-red-900/20 border border-red-500/50 rounded-lg">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div className="mb-4 p-4 bg-green-900/20 border border-green-500/50 rounded-lg">
+              <p className="text-green-400 text-sm">{success}</p>
+            </div>
+          )}
+
+          {/* Quantity and Purchase button in same row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <select
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className="w-full bg-transparent border border-[#535353] text-white py-3 px-4 rounded-md text-lg outline-none focus:border-[#1DB954]"
+                disabled={isLoading}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((q) => (
+                  <option className="text-[#1DB954] bg-[#121212]" key={q} value={q}>
+                    {q}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              className={`w-full py-3 rounded-md text-lg font-bold transition ${
+                isLoading
+                  ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                  : 'bg-[#1DB954] text-[#121212] hover:bg-opacity-90'
+              }`}
+              onClick={handlePurchase}
+              disabled={isLoading}
             >
-              <option className="text-[#1DB954] bg-[#121212]" value="Quantity">
-                Quantity
-              </option>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((q) => (
-                <option className="text-[#1DB954] bg-[#121212]" key={q} value={q}>
-                  {q}
-                </option>
-              ))}
-            </select>
+              {isLoading ? 'Processing...' : `Purchase Now`}
+            </button>
           </div>
-          <button
-            className="w-full py-4 rounded-md text-lg font-bold bg-[#1DB954] text-[#121212] hover:bg-opacity-90 transition"
-            onClick={() => setShowQR(true)}
-          >
-            Purchase Pass
-          </button>
         </div>
-      </div>
+      </main>
+      <Footer />
+
       {/* QR Code Dialog */}
       <Dialog open={showQR} onClose={() => setShowQR(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center">
-          <Dialog.Panel className="bg-[#121212] rounded-xl p-8 shadow-2xl flex flex-col items-center">
-            <Dialog.Title className="text-2xl font-bold text-[#1DB954] mb-4">Your Event Pass QR Code</Dialog.Title>
-            <QRCodeDisplay value={qrPayload} size={240} />
-            <button
-              className="mt-8 px-8 py-3 rounded-md text-lg font-bold bg-[#1DB954] text-[#121212] hover:bg-opacity-90 transition"
-              onClick={() => setShowQR(false)}
-            >
-              Close
-            </button>
+          <Dialog.Panel className="bg-[#121212] rounded-xl p-8 shadow-2xl flex flex-col items-center max-w-md">
+            <Dialog.Title className="text-2xl font-bold text-[#1DB954] mb-4 text-center">
+              Booking Successful!
+            </Dialog.Title>
+            <p className="text-[#B3B3B3] text-center mb-6">
+              Your event pass has been created. Show this QR code at the venue.
+            </p>
+            {currentBooking && <QRCodeDisplay value={currentBooking.qrCodeData} size={240} />}
+            <div className="mt-6 text-center">
+              <p className="text-[#B3B3B3] text-sm mb-2">Booking ID: {currentBooking?._id}</p>
+              <p className="text-[#B3B3B3] text-sm">
+                Quantity: {currentBooking?.quantity} | Total: ₹{currentBooking?.price}
+              </p>
+            </div>
+            <div className="mt-6 flex gap-4">
+              <button
+                className="px-6 py-2 rounded-md text-sm font-medium bg-[#1DB954] text-[#121212] hover:bg-opacity-90 transition"
+                onClick={() => navigate('/profile')}
+              >
+                View in Profile
+              </button>
+              <button
+                className="px-6 py-2 rounded-md text-sm font-medium border border-[#535353] text-[#B3B3B3] hover:border-[#1DB954] hover:text-[#1DB954] transition"
+                onClick={() => setShowQR(false)}
+              >
+                Close
+              </button>
+            </div>
           </Dialog.Panel>
         </div>
       </Dialog>

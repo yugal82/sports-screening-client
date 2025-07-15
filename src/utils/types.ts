@@ -17,20 +17,36 @@ export interface LoginUserRequest {
 
 export interface Booking {
     _id: string;
-    userId: string;
+    userId: {
+        _id: string;
+        name: string;
+        email: string;
+    };
     eventId: {
         _id: string;
         sportsCategory: string;
         venue: string;
+        price: number;
         date: string;
         time: string;
-        price: number;
-        image: string;
+        availableSeats: number;
     };
+    qrCodeData: string;
     quantity: number;
     price: number;
-    qrCodeData: string;
-    createdAt: string;
+    __v: number;
+}
+
+export interface CreateBookingRequest {
+    eventId: string;
+    quantity: number;
+    price: number;
+}
+
+export interface CreateBookingResponse {
+    status: boolean;
+    message: string;
+    booking: Booking;
 }
 
 export interface User {
@@ -110,6 +126,7 @@ export interface Event {
     venue: string;
     price: number;
     maxOccupancy: number;
+    availableSeats: number;
     image: string;
     date: string;
     time: string;
@@ -145,4 +162,12 @@ export interface EventsState {
     events: Event[];
     isLoading: boolean;
     error: string | null;
+}
+
+// Booking State Types
+export interface BookingState {
+    currentBooking: Booking | null;
+    isLoading: boolean;
+    error: string | null;
+    success: string | null;
 }

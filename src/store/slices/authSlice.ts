@@ -116,6 +116,11 @@ const authSlice = createSlice({
             state.isAuthenticated = true;
             state.error = null;
         },
+        addBooking: (state, action: PayloadAction<any>) => {
+            if (state.user) {
+                state.user.bookings.push(action.payload);
+            }
+        },
     },
     extraReducers: (builder) => {
         // Register user
@@ -186,5 +191,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { logout, clearError, setUser } = authSlice.actions;
+export const { logout, clearError, setUser, addBooking } = authSlice.actions;
 export default authSlice.reducer; 
