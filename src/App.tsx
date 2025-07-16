@@ -31,10 +31,6 @@ function AppContent() {
     initializeAuth();
   }, [dispatch]);
 
-  if (!isInitialized) {
-    return <LoadingSpinner />;
-  }
-
   return (
     <Router>
       <Routes>

@@ -52,6 +52,9 @@ export function RegisterPage() {
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.auth);
 
+  // Role selection state
+  const [role, setRole] = useState<'user' | 'owner' | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -101,11 +104,9 @@ export function RegisterPage() {
       setShowTeamDialog(false);
 
       // Prepare the API payload
-      if (formData) {
+      if (formData && role) {
         // Transform selected teams to match API structure
         const allTeams = Object.values(selectedTeams).flat();
-        // const drivers = selectedSports.includes('f1') ? ['Lewis Hamilton', 'Max Verstappen'] : [];
-
         const payload = {
           name: formData.name,
           email: formData.email,
@@ -114,9 +115,9 @@ export function RegisterPage() {
             sports: selectedSports.map((sport) =>
               sport === 'football' ? 'Football' : sport === 'f1' ? 'F1' : sport === 'cricket' ? 'Cricket' : sport
             ),
-            // drivers: drivers,
             teams: allTeams,
           },
+          role: role === 'user' ? 'user' : 'owner',
         };
 
         try {
@@ -167,81 +168,114 @@ export function RegisterPage() {
               <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded text-red-400 text-sm">{error}</div>
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div>
-                <input
-                  type="text"
-                  placeholder="Name"
-                  {...register('name', { required: 'Name is required' })}
-                  className="w-full bg-transparent border-b-2 border-[#535353] focus:border-[#1DB954] outline-none p-1 transition-colors"
-                />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message as string}</p>}
+            {/* Role selection step */}
+            {role === null ? (
+              <div className="flex flex-col gap-6 items-center justify-center">
+                <p className="text-lg text-[#B3B3B3] mb-2">Register as:</p>
+                <div className="flex gap-6 w-full">
+                  <button
+                    className={`flex-1 py-4 rounded-lg font-bold text-lg border-2 transition-colors ${
+                      role === 'user'
+                        ? 'bg-[#1DB954] text-[#121212] border-[#1DB954]'
+                        : 'bg-transparent text-[#B3B3B3] border-[#535353] hover:border-[#1DB954] hover:text-[#1DB954]'
+                    }`}
+                    onClick={() => setRole('user')}
+                  >
+                    User
+                  </button>
+                  <button
+                    className={`flex-1 py-4 rounded-lg font-bold text-lg border-2 transition-colors ${
+                      role === 'owner'
+                        ? 'bg-[#1DB954] text-[#121212] border-[#1DB954]'
+                        : 'bg-transparent text-[#B3B3B3] border-[#535353] hover:border-[#1DB954] hover:text-[#1DB954]'
+                    }`}
+                    onClick={() => setRole('owner')}
+                  >
+                    Owner
+                  </button>
+                </div>
               </div>
-              <div>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^\S+@\S+$/i,
-                      message: 'Invalid email address',
-                    },
-                  })}
-                  className="w-full bg-transparent border-b-2 border-[#535353] focus:border-[#1DB954] outline-none p-1 transition-colors"
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message as string}</p>}
-              </div>
-              <div>
-                <input
-                  type="password"
-                  placeholder="Password"
-                  {...register('password', {
-                    required: 'Password is required',
-                    minLength: {
-                      value: 8,
-                      message: 'Password must be at least 8 characters',
-                    },
-                  })}
-                  className="w-full bg-transparent border-b-2 border-[#535353] focus:border-[#1DB954] outline-none p-1 transition-colors"
-                />
-                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message as string}</p>}
-              </div>
-              <div>
-                <input
-                  type="password"
-                  placeholder="Confirm Password"
-                  {...register('confirmPassword', {
-                    required: 'Please confirm your password',
-                    validate: (value) => value === password || 'Passwords do not match',
-                  })}
-                  className="w-full bg-transparent border-b-2 border-[#535353] focus:border-[#1DB954] outline-none p-1 transition-colors"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message as string}</p>
-                )}
-              </div>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      {...register('name', { required: 'Name is required' })}
+                      className="w-full bg-transparent border-b-2 border-[#535353] focus:border-[#1DB954] outline-none p-1 transition-colors"
+                    />
+                    {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message as string}</p>}
+                  </div>
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      {...register('email', {
+                        required: 'Email is required',
+                        pattern: {
+                          value: /^\S+@\S+$/i,
+                          message: 'Invalid email address',
+                        },
+                      })}
+                      className="w-full bg-transparent border-b-2 border-[#535353] focus:border-[#1DB954] outline-none p-1 transition-colors"
+                    />
+                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message as string}</p>}
+                  </div>
+                  <div>
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      {...register('password', {
+                        required: 'Password is required',
+                        minLength: {
+                          value: 8,
+                          message: 'Password must be at least 8 characters',
+                        },
+                      })}
+                      className="w-full bg-transparent border-b-2 border-[#535353] focus:border-[#1DB954] outline-none p-1 transition-colors"
+                    />
+                    {errors.password && (
+                      <p className="text-red-500 text-sm mt-1">{errors.password.message as string}</p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      type="password"
+                      placeholder="Confirm Password"
+                      {...register('confirmPassword', {
+                        required: 'Please confirm your password',
+                        validate: (value) => value === password || 'Passwords do not match',
+                      })}
+                      className="w-full bg-transparent border-b-2 border-[#535353] focus:border-[#1DB954] outline-none p-1 transition-colors"
+                    />
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message as string}</p>
+                    )}
+                  </div>
 
-              <Button type="submit" variant="primary" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Signing Up...' : 'Sign Up'}
-              </Button>
-            </form>
+                  <Button type="submit" variant="primary" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Signing Up...' : 'Sign Up'}
+                  </Button>
+                </form>
 
-            <div className="flex items-center justify-center py-4">
-              <span className="bg-[#282828] px-2 text-[#B3B3B3]">Or continue with</span>
-            </div>
+                <div className="flex items-center justify-center py-4">
+                  <span className="bg-[#282828] px-2 text-[#B3B3B3]">Or continue with</span>
+                </div>
 
-            <div className="flex items-center justify-center gap-4">
-              <Chrome className="w-10" />
-              <Facebook className="w-10" />
-            </div>
+                <div className="flex items-center justify-center gap-4">
+                  <Chrome className="w-10" />
+                  <Facebook className="w-10" />
+                </div>
 
-            <p className="mt-8 text-center text-[#B3B3B3]">
-              Already have an account?{' '}
-              <Link to="/login" className="text-[#1DB954] font-semibold hover:underline">
-                Login
-              </Link>
-            </p>
+                <p className="mt-8 text-center text-[#B3B3B3]">
+                  Already have an account?{' '}
+                  <Link to="/login" className="text-[#1DB954] font-semibold hover:underline">
+                    Login
+                  </Link>
+                </p>
+              </>
+            )}
           </div>
         </div>
       </main>

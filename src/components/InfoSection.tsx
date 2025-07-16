@@ -43,7 +43,7 @@ export function InfoSection({
   );
 
   return (
-    <div className="py-24 sm:py-32">
+    <div className="py-8">
       <div className="container mx-auto px-4">
         <div
           className={`flex flex-col lg:flex-row gap-16 items-center ${
