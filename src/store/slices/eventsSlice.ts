@@ -12,9 +12,9 @@ const initialState: EventsState = {
 // Async thunk to fetch events
 export const fetchEvents = createAsyncThunk(
     'events/fetchEvents',
-    async (_, { rejectWithValue }) => {
+    async ({ query }: { query?: string } = {}, { rejectWithValue }) => {
         try {
-            const response = await getAllEvents();
+            const response = await getAllEvents(query);
             return response.events;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch events');

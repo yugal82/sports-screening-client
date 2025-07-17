@@ -8,9 +8,10 @@ import type { EventsResponse, ApiError } from '../utils/types';
  * Get all events from the server
  * @returns Promise<EventsResponse> - The events data
  */
-export const getAllEvents = async (): Promise<EventsResponse> => {
+export const getAllEvents = async (query?: string): Promise<EventsResponse> => {
     try {
-        const response = await axios.get<EventsResponse>(`${BASE_API_URL}events`, {
+        const url = query ? `${BASE_API_URL}events${query.startsWith('?') ? query : '?' + query}` : `${BASE_API_URL}events`;
+        const response = await axios.get<EventsResponse>(url, {
             withCredentials: true, // Include cookies for authentication
         });
         return response.data;
