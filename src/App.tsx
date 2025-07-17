@@ -13,6 +13,7 @@ import { CreateEventPage } from './pages/CreateEventPage';
 import ProfilePage from './pages/ProfilePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import 'leaflet/dist/leaflet.css';
 
 function AppContent() {
   const dispatch = useAppDispatch();

@@ -124,6 +124,7 @@ export interface Event {
     _id: string;
     sportsCategory: string;
     venue: string;
+    coordinates: [number, number]; // [lng, lat]
     price: number;
     maxOccupancy: number;
     availableSeats: number;

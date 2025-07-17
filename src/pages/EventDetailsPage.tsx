@@ -14,6 +14,8 @@ import {
 } from '../store/slices/bookingsSlice';
 import { addBooking } from '../store/slices/authSlice';
 import type { Event } from '../utils/types';
+import EventMap from '../components/EventMap';
+import FallbackImage from '../assets/feature-2.webp';
 
 // Helper function to get event title based on sports category
 const getEventTitle = (event: Event): string => {
@@ -128,8 +130,8 @@ export function EventDetailsPage() {
     <div className="bg-[#121212] min-h-screen text-white">
       <Header />
       <main className="flex flex-col lg:flex-row min-h-screen">
-        {/* Left: Image */}
-        <div className="lg:flex-1 flex items-center justify-center bg-[#121212] p-8">
+        {/* Left: Image and Map */}
+        <div className="lg:flex-1 flex flex-col items-center justify-center bg-[#121212] p-8">
           <img
             src={selectedEvent.image}
             alt={getEventTitle(selectedEvent)}
@@ -137,10 +139,13 @@ export function EventDetailsPage() {
             style={{ boxShadow: '0 8px 32px 0 rgba(0,0,0,0.5)' }}
             onError={(e) => {
               // Fallback image if the event image fails to load
-              (e.target as HTMLImageElement).src =
-                'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=900&q=80';
+              (e.target as HTMLImageElement).src = FallbackImage;
             }}
           />
+          {/* Map */}
+          {selectedEvent.coordinates && (
+            <EventMap coordinates={selectedEvent.coordinates} venue={selectedEvent.venue} />
+          )}
         </div>
         {/* Right: Details */}
         <div className="lg:flex-1 flex flex-col justify-center p-8 max-w-xl mx-auto">
