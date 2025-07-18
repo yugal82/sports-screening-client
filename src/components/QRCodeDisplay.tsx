@@ -5,7 +5,7 @@ interface QRCodeDisplayProps {
   size?: number;
 }
 
-export function QRCodeDisplay({ value, size = 200 }: QRCodeDisplayProps) {
+export function QRCodeDisplay({ value, size = 240 }: QRCodeDisplayProps) {
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-[#121212] rounded-xl shadow-lg">
       <QRCodeCanvas value={value} size={size} bgColor="#121212" fgColor="#1DB954" level="H" includeMargin={true} />

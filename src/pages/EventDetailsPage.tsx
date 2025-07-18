@@ -98,12 +98,6 @@ export function EventDetailsPage() {
     }
   }, [currentBooking, success, dispatch]);
 
-  useEffect(() => {
-    if (location.state && location.state.showQR) {
-      setShowQR(true);
-    }
-  }, [location.state]);
-
   const handlePurchase = async () => {
     if (!selectedEvent || !user) return;
     try {
@@ -133,6 +127,7 @@ export function EventDetailsPage() {
           },
           quantity,
           clientSecret: paymentIntentRes.data.clientSecret,
+          bookingId,
         },
       });
     } catch (error: any) {
@@ -268,7 +263,11 @@ export function EventDetailsPage() {
       <Footer />
 
       {/* QR Code Dialog */}
-      <Dialog open={showQR} onClose={() => setShowQR(false)} className="relative z-50">
+      {/* <Dialog
+        open={showQR && currentBooking?.status === 'complete'}
+        onClose={() => setShowQR(false)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center">
           <Dialog.Panel className="bg-[#121212] rounded-xl p-8 shadow-2xl flex flex-col items-center max-w-md">
             <Dialog.Title className="text-2xl font-bold text-[#1DB954] mb-4 text-center">
@@ -277,7 +276,9 @@ export function EventDetailsPage() {
             <p className="text-[#B3B3B3] text-center mb-6">
               Your event pass has been created. Show this QR code at the venue.
             </p>
-            {currentBooking && <QRCodeDisplay value={currentBooking.qrCodeData} size={240} />}
+            {currentBooking && currentBooking.status === 'complete' && (
+              <QRCodeDisplay value={currentBooking.qrCodeData} size={240} />
+            )}
             <div className="mt-6 text-center">
               <p className="text-[#B3B3B3] text-sm mb-2">Booking ID: {currentBooking?._id}</p>
               <p className="text-[#B3B3B3] text-sm">
@@ -300,7 +301,7 @@ export function EventDetailsPage() {
             </div>
           </Dialog.Panel>
         </div>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 }

@@ -18,7 +18,7 @@ const appearance = {
   },
 };
 
-function CheckoutForm({ event, quantity }: { event: any; quantity: number }) {
+function CheckoutForm({ event, quantity, bookingId }: { event: any; quantity: number; bookingId: string }) {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -43,7 +43,7 @@ function CheckoutForm({ event, quantity }: { event: any; quantity: number }) {
         return;
       }
       if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
-        navigate(`/events/${event.slug}`, { state: { showQR: true } });
+        navigate('/success', { state: { bookingId, event } });
       } else {
         setError('Payment was not successful.');
       }
@@ -102,10 +102,11 @@ function CheckoutForm({ event, quantity }: { event: any; quantity: number }) {
 export default function CheckoutPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { event, quantity, clientSecret } = (location.state || {}) as {
+  const { event, quantity, clientSecret, bookingId } = (location.state || {}) as {
     event: any;
     quantity: number;
     clientSecret: string;
+    bookingId: string;
   };
 
   useEffect(() => {
@@ -121,7 +122,7 @@ export default function CheckoutPage() {
       <div className="bg-[#121212] text-white">
         <Header />
         <main className="flex flex-col items-center justify-center p-8">
-          <CheckoutForm event={event} quantity={quantity} />
+          <CheckoutForm event={event} quantity={quantity} bookingId={bookingId} />
         </main>
         <Footer />
       </div>

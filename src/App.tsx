@@ -14,6 +14,7 @@ import ProfilePage from './pages/ProfilePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import 'leaflet/dist/leaflet.css';
 import CheckoutPage from './pages/CheckoutPage';
+import SuccessPage from './pages/SuccessPage';
 
 function AppContent() {
   const dispatch = useAppDispatch();
@@ -70,6 +71,7 @@ function AppContent() {
           }
         />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/success" element={<SuccessPage />} />
       </Routes>
     </Router>
   );

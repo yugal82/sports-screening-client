@@ -26,6 +26,19 @@ export const bookingsAPI = {
             throw new Error('Failed to create booking');
         }
     },
+    // Update booking status
+    updateBookingStatus: async (bookingId: string, status: string): Promise<any> => {
+        try {
+            const response = await apiClient.put<any>(`bookings/${bookingId}`, { status });
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                const errorResponse = error.response?.data as ApiError;
+                throw new Error(errorResponse?.message || 'Failed to update booking status');
+            }
+            throw new Error('Failed to update booking status');
+        }
+    },
 };
 
 export default bookingsAPI;
