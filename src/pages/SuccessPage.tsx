@@ -22,7 +22,7 @@ export default function SuccessPage() {
     }
     // Update booking status to confirmed using bookingsAPI
     bookingsAPI
-      .updateBookingStatus(bookingId, 'confirmed')
+      .updateBookingStatus(bookingId, 'confirmed', 'succeeded')
       .then((data) => {
         setBooking(data);
         setLoading(false);

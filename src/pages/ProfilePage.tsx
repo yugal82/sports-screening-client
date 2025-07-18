@@ -6,6 +6,7 @@ import { Footer } from '../components/Footer';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import { useAppSelector } from '../store/hooks';
 import { Dialog } from '@headlessui/react';
+import bookingsAPI from '../apis/bookingsAPI';
 
 // Team logo mapping
 const teamLogos: { [key: string]: string } = {
@@ -51,6 +52,11 @@ export default function ProfilePage() {
   const [editSuccess, setEditSuccess] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [showQR, setShowQR] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState<any>(null);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // If no user data, show loading or redirect
   if (!user) {
@@ -79,6 +85,27 @@ export default function ProfilePage() {
   const handleShowQR = (booking: any) => {
     setSelectedBooking(booking);
     setShowQR(true);
+  };
+
+  const handleCancelBooking = (booking: any) => {
+    setBookingToCancel(booking);
+    setShowCancelDialog(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!bookingToCancel) return;
+
+    try {
+      const response = await bookingsAPI.cancelBooking(bookingToCancel._id);
+      if (response.status === true) {
+        setSuccessMessage('The full amount is refunded to the same method of payment');
+        setShowSuccessDialog(true);
+      }
+    } catch (error: any) {
+      setShowErrorDialog(true);
+    } finally {
+      setShowCancelDialog(false);
+    }
   };
 
   // Create favorites array with logos
@@ -216,13 +243,20 @@ export default function ProfilePage() {
                             <div className="text-[#B3B3B3] text-sm mb-2">Quantity: {booking.quantity}</div>
                           </div>
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-[#1DB954] text-lg font-bold">₹{booking.price.toFixed(2)}</span>
-                            <button
-                              onClick={() => handleShowQR(booking)}
-                              className="px-3 py-1 bg-[#1DB954] text-[#121212] text-xs font-bold rounded hover:bg-opacity-90 transition"
-                            >
-                              Show QR
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded hover:bg-opacity-90 transition"
+                                onClick={() => handleCancelBooking(booking)}
+                              >
+                                Cancel Booking
+                              </button>
+                              <button
+                                onClick={() => handleShowQR(booking)}
+                                className="px-3 py-1 bg-[#1DB954] text-[#121212] text-xs font-bold rounded hover:bg-opacity-90 transition"
+                              >
+                                Show QR
+                              </button>
+                            </div>
                           </div>
                         </div>
                         <span className="absolute top-4 right-4 bg-[#1DB954] text-[#121212] text-xs font-bold px-3 py-1 rounded-full shadow">
@@ -295,6 +329,68 @@ export default function ProfilePage() {
             <button
               className="mt-6 px-6 py-2 rounded-md text-sm font-medium border border-[#535353] text-[#B3B3B3] hover:border-[#1DB954] hover:text-[#1DB954] transition"
               onClick={() => setShowQR(false)}
+            >
+              Close
+            </button>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Cancel Booking Confirmation Dialog */}
+      <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center">
+          <Dialog.Panel className="bg-[#181818] rounded-xl p-8 shadow-2xl flex flex-col items-center max-w-md border border-[#232323]">
+            <Dialog.Title className="text-2xl font-bold text-[#1DB954] mb-4 text-center">Cancel Booking?</Dialog.Title>
+            <p className="text-[#B3B3B3] text-center mb-6">Are you sure you want to cancel this booking?</p>
+            <div className="flex gap-4 mt-4">
+              <button
+                className="px-6 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-opacity-90 transition"
+                onClick={handleConfirmCancel}
+              >
+                Yes
+              </button>
+              <button
+                className="px-6 py-2 rounded-md text-sm font-medium border border-[#535353] text-[#B3B3B3] hover:border-[#1DB954] hover:text-[#1DB954] transition"
+                onClick={() => setShowCancelDialog(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onClose={() => setShowSuccessDialog(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center">
+          <Dialog.Panel className="bg-[#181818] rounded-xl p-8 shadow-2xl flex flex-col items-center max-w-md border border-[#232323]">
+            <Dialog.Title className="text-2xl font-bold text-[#1DB954] mb-4 text-center">
+              Booking Cancelled Successfully!
+            </Dialog.Title>
+            <p className="text-[#B3B3B3] text-center mb-6">{successMessage}</p>
+            <button
+              className="px-6 py-2 rounded-md text-sm font-medium bg-[#1DB954] text-[#121212] hover:bg-opacity-90 transition"
+              onClick={() => setShowSuccessDialog(false)}
+            >
+              Close
+            </button>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Error Dialog */}
+      <Dialog open={showErrorDialog} onClose={() => setShowErrorDialog(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center">
+          <Dialog.Panel className="bg-[#181818] rounded-xl p-8 shadow-2xl flex flex-col items-center max-w-md border border-[#232323]">
+            <Dialog.Title className="text-2xl font-bold text-red-500 mb-4 text-center">
+              Cancellation Failed
+            </Dialog.Title>
+            <p className="text-[#B3B3B3] text-center mb-6">
+              Something went wrong while canceling the booking, please try again
+            </p>
+            <button
+              className="px-6 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-opacity-90 transition"
+              onClick={() => setShowErrorDialog(false)}
             >
               Close
             </button>

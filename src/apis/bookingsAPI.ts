@@ -27,9 +27,9 @@ export const bookingsAPI = {
         }
     },
     // Update booking status
-    updateBookingStatus: async (bookingId: string, status: string): Promise<any> => {
+    updateBookingStatus: async (bookingId: string, status: string, paymentStatus: string): Promise<any> => {
         try {
-            const response = await apiClient.put<any>(`bookings/${bookingId}`, { status });
+            const response = await apiClient.put<any>(`bookings/${bookingId}`, { status, paymentStatus });
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error)) {
@@ -37,6 +37,19 @@ export const bookingsAPI = {
                 throw new Error(errorResponse?.message || 'Failed to update booking status');
             }
             throw new Error('Failed to update booking status');
+        }
+    },
+    // Cancel booking
+    cancelBooking: async (bookingId: string): Promise<any> => {
+        try {
+            const response = await apiClient.delete<any>(`bookings/${bookingId}`);
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                const errorResponse = error.response?.data as ApiError;
+                throw new Error(errorResponse?.message || 'Failed to cancel booking');
+            }
+            throw new Error('Failed to cancel booking');
         }
     },
 };
