@@ -50,6 +50,7 @@ export interface CreateBookingResponse {
 }
 
 export interface User {
+    userId: string;
     name: string;
     email: string;
     favorites: {
@@ -64,6 +65,7 @@ export interface RegisterUserResponse {
     status: boolean;
     message: string;
     user: {
+        _id: string;
         name: string;
         email: string;
         favorites: {
@@ -79,6 +81,7 @@ export interface LoginUserResponse {
     status: boolean;
     message: string;
     user: {
+        _id: string;
         name: string;
         email: string;
         favorites: {
@@ -99,6 +102,7 @@ export interface ValidateTokenResponse {
     status: boolean;
     message: string;
     user: {
+        _id: string;
         name: string;
         email: string;
         favorites: {
@@ -171,4 +175,23 @@ export interface BookingState {
     isLoading: boolean;
     error: string | null;
     success: string | null;
+}
+
+export interface CreatePaymentIntentRequest {
+    amount: number;
+    currency: string;
+    bookingId: string;
+    eventId: string;
+    userId: string;
+}
+
+export interface CreatePaymentIntentResponse {
+    success: boolean;
+    message: string;
+    data: {
+        clientSecret: string;
+        paymentIntentId: string;
+        amount: number;
+        currency: string;
+    };
 }

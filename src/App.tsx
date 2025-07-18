@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { useEffect } from 'react';
 import { store } from './store';
-import { useAppDispatch, useAppSelector } from './store/hooks';
+import { useAppDispatch } from './store/hooks';
 import { validateAuth } from './store/slices/authSlice';
 import { HomePage } from './pages/HomePage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -12,12 +12,11 @@ import { EventDetailsPage } from './pages/EventDetailsPage';
 import { CreateEventPage } from './pages/CreateEventPage';
 import ProfilePage from './pages/ProfilePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { LoadingSpinner } from './components/LoadingSpinner';
 import 'leaflet/dist/leaflet.css';
+import CheckoutPage from './pages/CheckoutPage';
 
 function AppContent() {
   const dispatch = useAppDispatch();
-  const { isInitialized } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -70,6 +69,7 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+        <Route path="/checkout" element={<CheckoutPage />} />
       </Routes>
     </Router>
   );

@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { MapPin, Calendar, DollarSign, Clock, Users } from 'lucide-react';
@@ -16,6 +16,7 @@ import { addBooking } from '../store/slices/authSlice';
 import type { Event } from '../utils/types';
 import EventMap from '../components/EventMap';
 import FallbackImage from '../assets/feature-2.webp';
+import checkoutAPI from '../apis/checkoutAPI';
 
 // Helper function to get event title based on sports category
 const getEventTitle = (event: Event): string => {
@@ -58,6 +59,9 @@ export function EventDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [showQR, setShowQR] = useState(false);
 
+  const { user } = useAppSelector((state) => state.auth);
+  const location = useLocation();
+
   useEffect(() => {
     if (events.length > 0 && slug) {
       // Find event by slug
@@ -94,20 +98,47 @@ export function EventDetailsPage() {
     }
   }, [currentBooking, success, dispatch]);
 
-  const handlePurchase = async () => {
-    if (!selectedEvent) return;
+  useEffect(() => {
+    if (location.state && location.state.showQR) {
+      setShowQR(true);
+    }
+  }, [location.state]);
 
+  const handlePurchase = async () => {
+    if (!selectedEvent || !user) return;
     try {
-      await dispatch(
+      // 1. Create a booking (pending, not confirmed)
+      const bookingRes = await dispatch(
         createBooking({
           eventId: selectedEvent._id,
           quantity: quantity,
           price: selectedEvent.price * quantity,
         })
       ).unwrap();
-    } catch (error) {
-      // Error is handled by the Redux slice
-      console.error('Booking failed:', error);
+      const bookingId = bookingRes._id;
+      // 2. Create payment intent
+      const paymentIntentRes = await checkoutAPI.createPaymentIntent({
+        amount: selectedEvent.price * quantity,
+        currency: 'inr',
+        bookingId,
+        eventId: selectedEvent._id,
+        userId: user.userId,
+      });
+      // Navigate to checkout page with event details and clientSecret
+      navigate('/checkout', {
+        state: {
+          event: {
+            ...selectedEvent,
+            title: getEventTitle(selectedEvent),
+          },
+          quantity,
+          clientSecret: paymentIntentRes.data.clientSecret,
+        },
+      });
+    } catch (error: any) {
+      // setPaymentError(error.message || 'Failed to initiate payment'); // This line is removed
+    } finally {
+      // setPaymentProcessing(false); // This line is removed
     }
   };
 

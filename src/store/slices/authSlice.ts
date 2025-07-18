@@ -24,6 +24,7 @@ export const registerUser = createAsyncThunk(
             const response = await authAPI.registerUser(userData);
             // Transform the response to ensure all arrays are defined
             const user: User = {
+                userId: response.user._id,
                 name: response.user.name,
                 email: response.user.email,
                 favorites: {
@@ -47,6 +48,7 @@ export const loginUser = createAsyncThunk<User, LoginUserRequest, { rejectValue:
             const response = await authAPI.loginUser(credentials);
             // Transform the response to match our User interface
             const user: User = {
+                userId: response.user._id,
                 name: response.user.name,
                 email: response.user.email,
                 favorites: {
@@ -82,6 +84,7 @@ export const validateAuth = createAsyncThunk(
             const response = await authAPI.validateToken();
             // Transform the response to match our User interface
             const user: User = {
+                userId: response.user._id,
                 name: response.user.name,
                 email: response.user.email,
                 favorites: {
