@@ -1,10 +1,8 @@
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { MapPin, Calendar, DollarSign, Clock, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Dialog } from '@headlessui/react';
-import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import {
   createBooking,
@@ -57,10 +55,8 @@ export function EventDetailsPage() {
   const { currentBooking, isLoading, error, success } = useAppSelector((state) => state.bookings);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [showQR, setShowQR] = useState(false);
 
   const { user } = useAppSelector((state) => state.auth);
-  const location = useLocation();
 
   useEffect(() => {
     if (events.length > 0 && slug) {
@@ -89,10 +85,9 @@ export function EventDetailsPage() {
     };
   }, [dispatch]);
 
-  // Show QR code when booking is successful
+  // Add booking to user's bookings when successful
   useEffect(() => {
     if (currentBooking && success) {
-      setShowQR(true);
       // Add the booking to the user's bookings
       dispatch(addBooking(currentBooking));
     }

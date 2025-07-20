@@ -13,8 +13,10 @@ import {
   Info,
   User,
   LogOut,
+  Menu,
+  X,
 } from 'lucide-react';
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logoutUser } from '../store/slices/authSlice';
@@ -128,19 +130,52 @@ function MoreInfoPopover() {
 export function Header() {
   const dispatch = useAppDispatch();
   const { isAuthenticated, user, isLoading } = useAppSelector((state) => state.auth);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
       console.log('Logout successful');
+      setIsMobileMenuOpen(false); // Close mobile menu after logout
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
+  // Close mobile menu when clicking outside or on navigation
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      const mobileMenu = document.querySelector('.mobile-menu');
+      const hamburgerButton = document.querySelector('.hamburger-button');
+
+      // Only close if clicking outside both the menu and the button
+      if (mobileMenu && hamburgerButton && !mobileMenu.contains(target) && !hamburgerButton.contains(target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    if (isMobileMenuOpen) {
+      // Add a small delay to prevent immediate closing
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 100);
+
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }
+  }, [isMobileMenuOpen]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [window.location.pathname]);
+
   return (
     <header className="bg-[#121212] text-white backdrop-blur-lg sticky top-0 z-50">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 relative">
         <div className="flex items-center justify-between h-20">
           <div className="flex-shrink-0">
             <Link to="/" className="text-2xl font-bold text-brand-green">
@@ -148,7 +183,8 @@ export function Header() {
             </Link>
           </div>
 
-          <nav className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8">
             <Link to="/" className="text-brand-light hover:text-brand-green transition-colors">
               Home Page
             </Link>
@@ -162,7 +198,8 @@ export function Header() {
             <MoreInfoPopover />
           </nav>
 
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Desktop Auth Buttons */}
+          <div className="hidden lg:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
                 <Link
@@ -198,7 +235,104 @@ export function Header() {
               </>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden relative z-10">
+            <button
+              className="hamburger-button p-2 rounded-md text-brand-light hover:text-brand-green hover:bg-brand-light-gray transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsMobileMenuOpen(!isMobileMenuOpen);
+              }}
+              aria-label="Toggle mobile menu"
+              type="button"
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        <Transition
+          show={isMobileMenuOpen}
+          enter="transition ease-out duration-200"
+          enterFrom="opacity-0 -translate-y-2"
+          enterTo="opacity-100 translate-y-0"
+          leave="transition ease-in duration-150"
+          leaveFrom="opacity-100 translate-y-0"
+          leaveTo="opacity-0 -translate-y-2"
+        >
+          <div className="lg:hidden mobile-menu absolute top-full left-0 right-0 z-50">
+            <div className="bg-[#181818] border-t border-[#232323] py-6 px-4 rounded-b-lg shadow-lg">
+              {/* Mobile Navigation Links */}
+              <nav className="space-y-4 mb-6">
+                <Link
+                  to="/"
+                  className="block text-brand-light hover:text-brand-green transition-colors py-2 border-b border-[#232323]"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Home Page
+                </Link>
+                <Link
+                  to="/events"
+                  className="block text-brand-light hover:text-brand-green transition-colors py-2 border-b border-[#232323]"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Events List
+                </Link>
+                <Link
+                  to="/contact"
+                  className="block text-brand-light hover:text-brand-green transition-colors py-2 border-b border-[#232323]"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Contact Us
+                </Link>
+              </nav>
+
+              {/* Mobile Auth Section */}
+              <div className="space-y-3 pt-4 border-t border-[#232323]">
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="flex items-center space-x-2 w-full px-4 py-3 text-sm font-medium text-white bg-transparent border border-brand-light rounded-md hover:bg-brand-light hover:text-brand-dark transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <User className="h-4 w-4" />
+                      <span>{user?.name || 'Profile'}</span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      disabled={isLoading}
+                      className="flex items-center space-x-2 w-full px-4 py-3 text-sm font-medium text-brand-dark bg-brand-green border border-brand-green rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>{isLoading ? 'Logging out...' : 'Logout'}</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/join"
+                      className="block w-full px-4 py-3 text-sm font-medium text-white bg-transparent border border-brand-light rounded-md hover:bg-brand-light hover:text-brand-dark transition-colors text-center"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Join
+                    </Link>
+                    <Link
+                      to="/login"
+                      className="block w-full px-4 py-3 text-sm font-medium text-brand-dark bg-brand-green border border-brand-green rounded-md hover:opacity-90 transition-opacity text-center"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
     </header>
   );

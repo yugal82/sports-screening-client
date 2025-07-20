@@ -27,7 +27,7 @@ export default function SuccessPage() {
         setBooking(data);
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(() => {
         setError('Failed to update booking status.');
         setLoading(false);
       });

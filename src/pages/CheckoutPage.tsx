@@ -11,7 +11,7 @@ const stripePromise = loadStripe(
 );
 
 const appearance = {
-  theme: 'stripe',
+  theme: 'stripe' as const,
   variables: {
     colorText: '#1DB954',
     colorBackground: '#121212',
